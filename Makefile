@@ -11,6 +11,9 @@ build:
 run:
 	@go run cmd/api/main.go
 
+templ:
+	@templ generate 
+	
 # Test the application
 test:
 	@echo "Testing..."

@@ -1,10 +1,12 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
-	"brtheo-go/cmd/web"
 	"github.com/a-h/templ"
+	"github.com/brtheo/goblog/cmd/web"
+	"github.com/brtheo/goblog/internal/octogo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -25,6 +27,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) HelloWorldHandler(c echo.Context) error {
+	octogo := octogo.NewOctogo(
+		octogo.
+			NewOctoConf().
+			Repo("blog").
+			User("brtheo"),
+	)
+	fmt.Println(octogo.GetAllPosts(7)[0].Title)
 	resp := map[string]string{
 		"message": "Hello World",
 	}

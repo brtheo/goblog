@@ -1,8 +1,9 @@
 package main
 
 import (
-	"brtheo-go/internal/server"
 	"fmt"
+
+	"github.com/brtheo/goblog/internal/server"
 )
 
 func main() {
