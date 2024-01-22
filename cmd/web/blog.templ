@@ -1,0 +1,58 @@
+package web
+
+import (
+  "github.com/brtheo/goblog/internal/octogo"
+	"time"
+	"strings"
+)
+
+func makeURL(url string) templ.SafeURL {
+  return templ.SafeURL("/blog/"+url)
+}
+func makeDate(timestamp int) string {
+  return time.Unix(int64(timestamp),0).UTC().Format(time.DateOnly)
+}
+
+// func makeId(slug string) string {
+
+// }
+
+templ BlogHomePage(posts []*octogo.Post) {
+	@Layout() {
+		for _, post := range posts {
+      @BlogPost(post, true)
+    }
+	}
+}
+
+templ BlogPostPage(post *octogo.Post) {
+  @Layout() {
+    @BlogPost(post, false)
+  }
+}
+
+templ Tag(tags []string) {
+  for _, tag := range tags {
+    <li ><a class="card">{tag}</a></li>
+  }   
+}
+
+templ BlogPost(post *octogo.Post, home bool) {
+  <article class="card" 
+    if !home {
+      post
+    }
+  >
+    <h1 id={strings.ToLower(post.Slug)}>{post.Title}</h1>
+    if home {
+      <span>{makeDate(post.PublishedAt)}</span>
+      <ul>@Tag(post.Tags)</ul>
+      <a class="card" href={makeURL(post.Slug)}>Read</a>
+    } else {
+      @templ.Raw(post.Content)
+    }         
+  </article>
+  if !home {
+    <table-content class="card"></table-content>
+  }
+}

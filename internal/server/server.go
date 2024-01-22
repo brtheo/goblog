@@ -7,17 +7,28 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/brtheo/goblog/internal/octogo"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 type Server struct {
-	port int
+	port   int
+	Octogo *octogo.Octogo
+	Posts  []*octogo.Post
 }
 
 func NewServer() *http.Server {
+	octogo := octogo.NewOctogo(
+		octogo.User("brtheo"),
+		octogo.Repo("blog"),
+	)
+
+	posts := octogo.GetAllPosts(10)
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	NewServer := &Server{
-		port: port,
+		port:   port,
+		Octogo: octogo,
+		Posts:  posts,
 	}
 
 	// Declare Server config

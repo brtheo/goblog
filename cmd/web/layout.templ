@@ -1,0 +1,41 @@
+package web
+
+templ Layout() {
+	<!DOCTYPE html>
+	<html lang="en" class="dark">
+		<head>
+			<meta charset="utf-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<title>Go Blueprint Hello yes</title>
+			<script src="/static/js/htmx.min.js"></script>
+			<script src="/static/js/app.js"></script>
+			<link rel="stylesheet" href="/static/css/style.css"></link>
+      <link rel="stylesheet" href="https://use.typekit.net/ppc0skv.css"></link>
+		</head>
+		<body>
+      <header>
+        @Nav()
+      </header>
+			<main>
+				{ children... }
+			</main>
+      <footer>
+        
+      </footer>
+		</body>
+	</html>
+}
+
+templ Nav() {
+  <input menu-button type="checkbox" />
+  <nav class="card center-y">
+    <a class="card" href="/">Home</a>
+    <a class="card" href="/blog">Blog</a>
+    <a class="card" href="/about">About</a>
+    <scheme-switcher></scheme-switcher>
+  </nav>
+  <aside class="card center-y">
+    <img class="avatar" src="/static/img/me.jpg" alt="theo" />
+    <span>Théo Brossier</span>
+  </aside>
+}

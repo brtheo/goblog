@@ -1,0 +1,157 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+@import url('./Ellograph_CF/stylesheet.css');
+@import url('./card.css');
+@import url('./header.css');
+@import url('./article.css');
+
+:root {
+  --black: #121212;
+  --white: #cacaca;
+  --electric: #D9D87D;
+  --dimmedLight: #779d46;
+  
+  font-family: 'Ellograph CF','Spline Sans Mono','Encode Sans Expanded';
+  font-size: 1.25rem !important;
+
+  --bgClr: var(--white);
+  --clr: var(--black);
+  --bgClrLighter: var(--white-300);
+  --clrLighter: var(--black-300);
+  --accent: var(--dimmedLight);
+  --contrast: black;
+
+  --gap: 1rem;
+  --gap-xl: 2rem;
+  --gap-sm: .5rem;
+}
+.dark {
+  --bgClr: var(--black);
+  --clr: var(--white);
+  --accent: var(--electric);
+  
+  --black-300: color-mix(in lab, white 30%, var(--clr));
+  --white-300: color-mix(in lab, white 60%, var(--clr));
+  --bgClrLighter: var(--black-300);
+  --clrLighter: var(--white-300);
+  --contrast: white;
+}
+*,*::before,*::after {box-sizing: border-box;}
+*::selection {background-color: var(--clr);}
+* { min-width: 0}
+.isolate {isolation: isolate;}
+.center-y {align-items: center}
+.w-full { width: 100% }
+a { text-decoration: none; color: var(--accent);}
+
+html {
+  background-color: var(--bgClr);
+  background-image: radial-gradient(var(--clr) 1px, transparent 0);
+  background-size: 40px 40px;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  transition: all 100ms linear;
+  & > body {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: 100px auto;
+    place-content: center;
+    justify-items: center;
+    margin: var(--gap) auto;
+    padding: 0;
+    gap: var(--gap-xl);
+    container: main-container / inline-size;
+    max-width: 1400px;
+  }
+}
+@media screen and (max-width: 840px) {
+  html {
+    margin: 0 auto;
+    padding: var(--gap-sm);
+  }
+   body {  
+    padding: var(--gap);
+  }
+}
+
+main {
+  display: grid;
+  grid-row: 2;
+  gap: var(--gap-xl);
+  grid-column: 2 / span 10;
+  width: 100%;
+}
+
+@container main-container (min-width: 840px) {
+  header { 
+    width: 100%;
+    grid-column: 2 / span 10;
+    grid-row: 1;
+    justify-content: space-between;
+  }
+  .card {
+    position: relative;
+  }
+  main {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@container main-container (max-width: 840px) {
+  header {
+    flex-direction: column-reverse;
+    margin-bottom: 4rem;
+    grid-column: span 12;
+    gap: 1rem;
+    & > [menu-button] { 
+      display: initial;
+      top: 30px;
+      left: 10px;
+   }
+    & > aside {
+      padding: 1rem;
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: fit-content;
+    }
+    & > nav {
+      height: fit-content;
+      position: absolute;
+      flex-direction: column;
+      left: 0;
+      top: 4rem;
+      scale: 0;
+      transition: scale 100ms ease-in, transform 100ms linear !important;
+      animation: unset;
+      z-index: 1000;
+      width: 200px;
+    }
+  }
+
+  main {
+    grid-column: span 12;
+    width: 95%;
+  }
+}
+
+@container main-container (max-width: 420px) {
+  main {
+    width: 85%;
+  }
+}
+
+@container main-container (max-width: 1200px) {
+  table-content {
+    display: none;
+  }
+  article[post] {
+    grid-column: span 2;
+  }
+}
+
+@keyframes floating {
+  33% { translate: 0 10px; }
+  66% { translate: 0 -8px; }
+}

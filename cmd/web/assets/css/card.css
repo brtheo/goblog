@@ -1,0 +1,62 @@
+.card {
+  --rad: .6rem;
+  --offset: 4px;
+  display: flex;
+  /* flex-direction:  column; 
+  justify-content: space-between;*/
+  gap: var(--gap);
+  color: var(--clr);
+  box-sizing: border-box;
+  border: solid 3px var(--clr);
+  border-radius: var(--rad);
+  background: var(--bgClr);
+  filter: drop-shadow(var(--offset) var(--offset) 0 var(--clr));
+  padding: var(--gap);
+  transition: transform 100ms linear;
+}
+
+a.card {
+  font-style: italic;
+  --offset: 3px;
+  --rad: .3rem;
+  width: 100%;
+  text-decoration: none;
+  align-content: center;
+  justify-content: center;
+  transition: 
+    background 100ms linear,
+    translate 100ms linear;
+}
+
+a.card:hover {
+  background: color-mix(in lab, var(--bgClr) 85%, var(--clr));
+  color: var(--clrLighter);
+}
+
+a.card:active {
+  background: var(--clr);
+  color: var(--bgClr);
+  border-color: var(--clr);
+  translate: var(--offset) var(--offset);
+}
+a.card[data-active] { --clr: var(--accent); }
+a.card:active::before{ translate: -1px -1px; }
+
+:not(a, [post], table-content).card {
+  animation: floating 8600ms ease-in infinite;
+  &:hover {
+    outline: solid 3px var(--accent);
+    outline-offset: 15px;
+    &:nth-child(odd) {
+      transform: 
+        skew(-3deg,-2deg)
+        scaleZ(10);
+    }
+    &:nth-child(even) {
+      transform: 
+        skew(3deg,2deg)
+        scaleZ(10);
+    }
+  }
+}
+

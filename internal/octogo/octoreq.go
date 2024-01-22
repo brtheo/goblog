@@ -23,29 +23,32 @@ type OctoRequest struct {
 	conf OctoReqConf
 }
 
-func (c *OctoReqConf) Endpoint(endpoint string) *OctoReqConf {
-	c.endpoint = endpoint
-	return c
-}
-func (c *OctoReqConf) Id(id string) *OctoReqConf {
-	c.id = id
-	return c
-}
-
-func NewOctoReq(conf *OctoReqConf) *OctoRequest {
-	return &OctoRequest{*conf}
-}
-
-func NewOctoReqConf() *OctoReqConf {
-	return &OctoReqConf{
-		verb: "GET",
+func Endpoint(endpoint string) ConfFunc[OctoReqConf] {
+	return func(conf *OctoReqConf) {
+		conf.endpoint = endpoint
 	}
 }
-func CommitOctoReq(url string) *OctoRequest {
-	return &OctoRequest{conf: OctoReqConf{
-		verb:     "GET",
-		endpoint: COMMIT_URL + "?sha=" + os.Getenv("GITBRANCH") + "&path=" + url,
-	}}
+func Id(id string) ConfFunc[OctoReqConf] {
+	return func(conf *OctoReqConf) {
+		conf.id = id
+	}
+}
+func Verb(v string) ConfFunc[OctoReqConf] {
+	return func(conf *OctoReqConf) {
+		conf.verb = v
+	}
+}
+
+func NewOctoReq(funs ...ConfFunc[OctoReqConf]) *OctoRequest {
+	conf := _OctoReqConf()
+	construct[OctoReqConf](&conf, funs)
+	return &OctoRequest{conf}
+}
+
+func _OctoReqConf() OctoReqConf {
+	return OctoReqConf{
+		verb: "GET",
+	}
 }
 
 func parseResponseInto[T any](resp *http.Response) (parsedStruct T) {
@@ -59,7 +62,7 @@ func parseResponseInto[T any](resp *http.Response) (parsedStruct T) {
 func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 	client := &http.Client{}
 	url := BASE_URL + fmt.Sprintf("%s/", o.conf.user) + fmt.Sprintf("%s/", o.conf.repo) + octoReq.conf.endpoint
-	fmt.Println(url)
+	// fmt.Println(url)
 	req, err := http.NewRequest(octoReq.conf.verb, url, nil)
 	util.Throw(err)
 	req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
@@ -69,21 +72,24 @@ func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 	return resp
 }
 
-func (o *Octogo) octoFetches(octoReq OctoReqs) Responses {
+func (o *Octogo) octoFetches(octoReq map[string]OctoReqs) *it.ChannelIter[Responses] {
 	ch := make(chan Responses)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func(req OctoReqs) {
-		defer wg.Done()
-		ch <- Responses{
-			One: o.octoFetch(req.One),
-			Two: o.octoFetch(req.Two),
-		}
-	}(octoReq)
+	wg.Add(len(octoReq))
+	for id, req := range octoReq {
+		go func(req OctoReqs, id string) {
+			defer wg.Done()
+			ch <- Responses{
+				One: o.octoFetch(req.One),
+				Two: o.octoFetch(req.Two),
+				id:  id,
+			}
+		}(req, id)
+	}
 
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
-	return it.FromChannel(ch).Next().Unwrap()
+	return it.FromChannel(ch)
 }

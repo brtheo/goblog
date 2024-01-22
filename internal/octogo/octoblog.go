@@ -11,9 +11,14 @@ import (
 	"time"
 
 	it "github.com/BooleanCat/go-functional/iter"
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/brtheo/goblog/internal/octogo/util"
+	headingid "github.com/jkboxomine/goldmark-headingid"
 	"github.com/yuin/goldmark"
+	hl "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
+	gutil "github.com/yuin/goldmark/util"
 	"go.abhg.dev/goldmark/frontmatter"
 )
 
@@ -27,8 +32,14 @@ const (
 
 type Slug_Id it.Pair[string, string]
 type OctoReqs it.Pair[*OctoRequest, *OctoRequest]
-type Responses it.Pair[*http.Response, *http.Response]
+type Responses struct {
+	One *http.Response
+	Two *http.Response
+	id  string
+}
 type Commits_B64 it.Pair[[]CommitResponse, string]
+
+type ConfFunc[T any] func(conf *T)
 
 type OctoConf struct {
 	user string
@@ -38,25 +49,34 @@ type Octogo struct {
 	conf OctoConf
 }
 
-func (conf OctoConf) User(u string) OctoConf {
-	conf.user = u
-	return conf
+func User(u string) ConfFunc[OctoConf] {
+	return func(conf *OctoConf) {
+		conf.user = u
+	}
 }
 
-func (conf OctoConf) Repo(r string) OctoConf {
-	conf.repo = r
-	return conf
+func Repo(r string) ConfFunc[OctoConf] {
+	return func(conf *OctoConf) {
+		conf.repo = r
+	}
 }
 
-func NewOctoConf() OctoConf {
+func _OctoConf() OctoConf {
 	return OctoConf{
 		user: "admin",
 		repo: "default",
 	}
 }
 
-func NewOctogo(conf OctoConf) Octogo {
-	return Octogo{conf}
+func construct[T any](obj *T, funs []ConfFunc[T]) {
+	for _, fn := range funs {
+		fn(obj)
+	}
+}
+func NewOctogo(funs ...ConfFunc[OctoConf]) *Octogo {
+	conf := _OctoConf()
+	construct[OctoConf](&conf, funs)
+	return &Octogo{conf}
 }
 
 func (o *Octogo) newPost(commits_b64 Commits_B64, _slug string) *Post {
@@ -64,7 +84,7 @@ func (o *Octogo) newPost(commits_b64 Commits_B64, _slug string) *Post {
 		Tags []string `yaml:"tags"`
 	}
 	last := len(commits_b64.One) - 1
-	slug := strings.Replace(_slug, ".md", "", 0)
+	slug := strings.ReplaceAll(_slug, ".md", "")
 	title := strings.ReplaceAll(slug, "-", " ")
 	// fmt.Println(pair.One)
 	html := extractHTMLWithMatter(commits_b64.Two, &matter)
@@ -82,11 +102,14 @@ func (o *Octogo) newPost(commits_b64 Commits_B64, _slug string) *Post {
 func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 	start := time.Now()
 
-	treeElements := it.Lift[TreeElement](
-		parseResponseInto[TreeResponse](o.octoFetch(NewOctoReq(NewOctoReqConf().Endpoint(TREE_URL + os.Getenv("GITBRANCH"))))).Tree,
-	).Filter(func(treeElement TreeElement) bool {
-		return strings.Contains(treeElement.Path, ".md")
-	}).Take(nPerPage)
+	treeElements := it.Lift[TreeElement](parseResponseInto[TreeResponse](
+		o.octoFetch(
+			NewOctoReq(Endpoint(TREE_URL + os.Getenv("GITBRANCH"))),
+		),
+	).Tree).
+		Filter(func(treeElement TreeElement) bool {
+			return strings.Contains(treeElement.Path, ".md")
+		}).Take(nPerPage)
 
 	slug_id := it.Map[TreeElement, Slug_Id](treeElements, func(treeElement TreeElement) Slug_Id {
 		return Slug_Id{
@@ -95,9 +118,25 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 		}
 	})
 
-	it.Map[Slug_Id, *Post](slug_id, o.getPost)
-
-	p := it.Map[Slug_Id, *Post](slug_id, o.getPost).Collect()
+	p := it.Map[Responses, *Post](
+		o.octoFetches(it.Fold[Slug_Id, map[string]OctoReqs](
+			slug_id,
+			map[string]OctoReqs{},
+			func(m map[string]OctoReqs, s Slug_Id) map[string]OctoReqs {
+				m[s.One] = OctoReqs{
+					One: NewOctoReq(Endpoint(COMMIT_URL + "?sha=" + os.Getenv("GITBRANCH") + "&path=" + s.One)),
+					Two: NewOctoReq(Endpoint(BLOB + s.Two)),
+				}
+				return m
+			},
+		)),
+		func(r Responses) *Post {
+			return o.newPost(Commits_B64{
+				One: parseResponseInto[[]CommitResponse](r.One),
+				Two: parseResponseInto[BlobResponse](r.Two).Content,
+			}, r.id)
+		},
+	).Collect()
 	By[Post](func(a, b *Post) bool {
 		return a.PublishedAt > b.PublishedAt
 	}).Sort(p)
@@ -106,40 +145,66 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 	return p
 }
 
-func (o *Octogo) getPost(slug_id Slug_Id) *Post {
+func (o *Octogo) GetPostBySlug(slug string) *Post {
+	_slug := slug + ".md"
 	octoReqs := o.octoFetches(
-		OctoReqs{
-			One: CommitOctoReq(slug_id.One),
-			Two: NewOctoReq(NewOctoReqConf().Endpoint(BLOB + slug_id.Two)),
+		map[string]OctoReqs{
+			"_": {
+				One: NewOctoReq(Endpoint(COMMIT_URL + "?sha=" + os.Getenv("GITBRANCH") + "&path=" + _slug)),
+				Two: NewOctoReq(Endpoint(CONTENT_URL + _slug + "?ref=" + os.Getenv("GITBRANCH"))),
+			},
 		},
-	)
-	fmt.Print(slug_id.Two)
+	).Collect()
 	return o.newPost(Commits_B64{
-		One: parseResponseInto[[]CommitResponse](octoReqs.One),
-		Two: parseResponseInto[BlobResponse](octoReqs.Two).Content,
-	}, slug_id.One)
+		One: parseResponseInto[[]CommitResponse](octoReqs[0].One),
+		Two: parseResponseInto[ContentResponse](octoReqs[0].Two).Content,
+	}, slug)
 }
 
-func (o *Octogo) GetPostBySlug(_slug string) *Post {
-	slug := _slug + ".md"
-	octoReqs := o.octoFetches(
-		OctoReqs{
-			One: CommitOctoReq(_slug),
-			Two: NewOctoReq(NewOctoReqConf().Endpoint(CONTENT_URL + _slug + "?ref=" + os.Getenv("GITBRANCH"))),
-		},
-	)
-	return o.newPost(Commits_B64{
-		One: parseResponseInto[[]CommitResponse](octoReqs.One),
-		Two: parseResponseInto[ContentResponse](octoReqs.Two).Content,
-	}, slug)
+func wrapperRenderer(w gutil.BufWriter, ctx hl.CodeBlockContext, entering bool) {
+	language, ok := ctx.Language()
+	lang := string(language)
+	if ok && lang != "" {
+		if entering {
+			w.WriteString("<section data-lang=" + lang + ">")
+		} else {
+			w.WriteString(`</section>`)
+		}
+		return
+	}
+	if language == nil {
+		if entering {
+			w.WriteString("<pre><code>")
+		} else {
+			w.WriteString(`</code></pre>`)
+		}
+	}
 }
 
 func extractHTMLWithMatter[T any](content string, matter *T) string {
 	unparsedFrontmatter, err := base64.StdEncoding.DecodeString(content)
 	util.Throw(err)
 	var buf bytes.Buffer
-	md := goldmark.New(goldmark.WithExtensions(&frontmatter.Extender{}))
-	ctx := parser.NewContext()
+	ctx := parser.NewContext(parser.WithIDs(headingid.NewIDs()))
+	md := goldmark.New(
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithUnsafe(),
+		),
+		goldmark.WithExtensions(
+			&frontmatter.Extender{},
+			hl.NewHighlighting(
+				hl.WithStyle("xcode-dark"),
+				hl.WithWrapperRenderer(wrapperRenderer),
+				hl.WithFormatOptions(
+					chromahtml.WithLineNumbers(true),
+					chromahtml.TabWidth(2),
+				),
+			),
+		),
+	)
 	if err := md.Convert([]byte(unparsedFrontmatter), &buf, parser.WithContext(ctx)); err != nil {
 		log.Fatal(err)
 	}

@@ -9,12 +9,14 @@ build:
 
 # Run the application
 run:
+	@templ generate 
 	@go run cmd/api/main.go
 
 templ:
 	@templ generate 
 	
-# Test the application
+bun:
+	@bun build ./cmd/web/assets/js/app.ts --outdir ./cmd/web/assets/js
 test:
 	@echo "Testing..."
 	@go test ./tests -v
@@ -23,22 +25,24 @@ test:
 clean:
 	@echo "Cleaning..."
 	@rm -f main
-
+tw:
+	@bunx tailwindcss -i ./cmd/web/css/style.css -o ./cmd/web/css/out.css --watch
 # Live Reload
 watch:
-	@if command -v air > /dev/null; then \
-	    air; \
-	    echo "Watching...";\
-	else \
-	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-	        go install github.com/cosmtrek/air@latest; \
-	        air; \
-	        echo "Watching...";\
-	    else \
-	        echo "You chose not to install air. Exiting..."; \
-	        exit 1; \
-	    fi; \
-	fi
+	@air
+	# @if command -v air > /dev/null; then \
+	#     air server --port 1337; \
+	#     echo "Watching...";\
+	# else \
+	#     read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+	#     if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+	#         go install github.com/cosmtrek/air@latest; \
+	#         air; \
+	#         echo "Watching...";\
+	#     else \
+	#         echo "You chose not to install air. Exiting..."; \
+	#         exit 1; \
+	#     fi; \
+	# fi
 
 .PHONY: all build run test clean

@@ -1,0 +1,48 @@
+header {
+  display: flex; 
+}
+
+aside {
+  & > .avatar {
+    outline: 3px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 100vh;
+    width: 50px;
+    aspect-ratio: 1/1;
+    transition: 
+      outline 100ms linear,
+      filter 200ms linear;
+  }
+  &:hover > .avatar {
+    color: var(--accent);
+    outline-color: currentColor;
+    filter:  drop-shadow(0 0 20px var(--accent));
+  }
+}
+
+[menu-button] {
+  all: unset;
+  display: none;
+  width: 50px;
+  aspect-ratio: 1 / 1;
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: pointer; 
+  &::before {
+    content: '≡';
+    position: absolute;
+    inset: -.9rem 0 0 0;
+    font-size: 3rem;
+    color: var(--clr);
+    display: grid;
+    place-content: center;
+    transform-origin: center;
+    transition: font-size 100ms linear;
+  }
+  &:checked + nav { scale: 1 !important; }
+  &:checked::before {
+    content: 'X';
+    font-size: 2.5rem;
+  }
+}   

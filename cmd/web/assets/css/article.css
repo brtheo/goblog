@@ -1,0 +1,77 @@
+article.card {
+  display: grid;
+  grid-template-columns: auto auto;
+  font-family: "sofia-pro";
+  & > section[data-lang] {
+    border-radius: 1.5rem;
+    padding: var(--gap);
+    background-color: color-mix(in oklab, var(--bgClr) 95%, var(--accent)) !important;
+    position: relative;
+    &::before {
+      content: attr(data-lang);
+      height: max-content;
+      width: max-content;
+      display: block;
+      translate: 0 -10px;
+      float: right;
+      opacity: .2;
+      font-size: .8rem;
+    }
+    & > pre {
+      background-color: color-mix(in oklab, var(--bgClr) 95%, var(--accent)) !important;
+      margin: 0;
+    }
+  }
+  &  img {
+    width: 100%;
+  }
+  & p {
+      font-size: clamp(0.7rem, 0.4rem + 1.0667vw, 1rem);
+  }
+  & code span {
+    font-size: 15px;
+  }
+  & > h5 { 
+    margin-block: 0px;
+    font-size: clamp(1rem, 0.2rem + 2.8444vw, 1.8rem);
+    text-transform: capitalize;
+  }
+  & > span {
+    font-family: "Ellograph CF";
+    font-size: .8rem;
+    margin: 0;
+  }
+  & > ul {
+    list-style: none;
+    padding-inline-start: 0px;
+    margin-block: 0;
+    display: flex;
+    height: max-content;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+    grid-column: span 2;
+    & a {
+      border-radius: 2rem;
+      width: fit-content;
+      padding: .4rem;
+      font-size: clamp(0.7rem, 0.4rem + 1.0667vw, 1rem);
+    }
+  }
+  & > a {
+    width: auto;
+    transform: translateY(40px);
+    grid-column: 2;
+    place-self: end;
+    padding: var(--gap-sm) var(--gap);
+  }
+}
+
+article[post] {
+  display: block;
+}
+main:has(> [post]) {
+  grid-template-columns: 10fr 2fr;
+}
+pre {
+  overflow-x: auto;
+}
