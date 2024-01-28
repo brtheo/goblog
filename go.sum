@@ -1,5 +1,5 @@
-github.com/BooleanCat/go-functional v0.19.0 h1:OWo8rzuQlzNKaGhNTdFIdF9zI2sOSX+kHk5foE1orWE=
-github.com/BooleanCat/go-functional v0.19.0/go.mod h1:Zd1xLrGFohrDdjojLUCrzSex40yf/PVP2KB86ha9Qqg=
+github.com/BooleanCat/go-functional v1.1.0 h1:ZU8ejc2u/71I5LZbI5qiJI75Ttw1FueLNmoccPt8nDI=
+github.com/BooleanCat/go-functional v1.1.0/go.mod h1:Zd1xLrGFohrDdjojLUCrzSex40yf/PVP2KB86ha9Qqg=
 github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/a-h/templ v0.2.513 h1:ZmwGAOx4NYllnHy+FTpusc4+c5msoMpPIYX0Oy3dNqw=

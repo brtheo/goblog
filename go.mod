@@ -3,7 +3,7 @@ module github.com/brtheo/goblog
 go 1.21.3
 
 require (
-	github.com/BooleanCat/go-functional v0.19.0
+	github.com/BooleanCat/go-functional v1.1.0
 	github.com/a-h/templ v0.2.513
 	github.com/alecthomas/chroma/v2 v2.2.0
 	github.com/jkboxomine/goldmark-headingid v0.0.0-20200109122657-8b6c16c18388
