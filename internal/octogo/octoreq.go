@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/brtheo/goblog/internal/octogo/util"
@@ -78,8 +79,7 @@ func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 		}
 	}()
 	util.Throw(err)
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", "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"))
-	// req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
+	req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
 	req.Header.Set("Accept", "application/vnd.github+json")
 	resp, err = client.Do(req)
 	util.Throw(err)
