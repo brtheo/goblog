@@ -79,7 +79,9 @@ func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 		}
 	}()
 	util.Throw(err)
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
+	k := os.Getenv("GITKEY")
+	req.Header.Set("Authorization", "token "+k)
+	fmt.Print("token " + k)
 	req.Header.Set("Accept", "application/vnd.github+json")
 	resp, err = client.Do(req)
 	util.Throw(err)
