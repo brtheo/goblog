@@ -15,7 +15,7 @@
   transition: transform 100ms linear;
 }
 
-a.card {
+:where(a, button).card {
   font-style: italic;
   --offset: 3px;
   --rad: .3rem;
@@ -28,12 +28,12 @@ a.card {
     translate 100ms linear;
 }
 
-a.card:hover {
+:where(a, button).card:hover {
   background: color-mix(in lab, var(--bgClr) 85%, var(--clr));
   color: var(--clrLighter);
 }
 
-a.card:active {
+:where(a, button).card:active {
   background: var(--clr);
   color: var(--bgClr);
   border-color: var(--clr);
@@ -42,7 +42,7 @@ a.card:active {
 a.card[data-active] { --clr: var(--accent); }
 a.card:active::before{ translate: -1px -1px; }
 
-:not(a, [post], table-content).card {
+:not(a, [post], table-content, [tools]).card {
   animation: floating 8600ms ease-in infinite;
   &:hover {
     outline: solid 3px var(--accent);

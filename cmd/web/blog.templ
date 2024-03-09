@@ -4,6 +4,7 @@ import (
   "github.com/brtheo/goblog/internal/octogo"
 	"time"
 	"strings"
+  "github.com/BooleanCat/go-functional/iter"
 )
 
 func makeURL(url string) templ.SafeURL {
@@ -13,11 +14,7 @@ func makeDate(timestamp int) string {
   return time.Unix(int64(timestamp),0).UTC().Format(time.DateOnly)
 }
 
-// func makeId(slug string) string {
-
-// }
-
-templ BlogHomePage(posts []*octogo.Post) {
+templ BlogHomePage(posts []*octogo.Post ) {
 	@Layout() {
 		for _, post := range posts {
       @BlogPost(post, true)
@@ -25,9 +22,10 @@ templ BlogHomePage(posts []*octogo.Post) {
 	}
 }
 
-templ BlogPostPage(post *octogo.Post) {
+templ BlogPostPage(post *octogo.Post, comment iter.Pair[[]*octogo.CommentResponse, string]) {
   @Layout() {
     @BlogPost(post, false)
+    @CommentForm(comment)
   }
 }
 
@@ -37,11 +35,48 @@ templ Tag(tags []string) {
   }   
 }
 
-templ BlogPost(post *octogo.Post, home bool) {
-  <article class="card" 
-    if !home {
-      post
+templ CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) {
+  <section style="display: flex; flex-direction: column;gap: var(--gap-xl)">
+    <form hx-post="/blog/comment" method="POST" hx-swap="afterend" action="/blog/comment" style="flex-direction: column"post class="card">
+        <input
+          post
+          required
+          type="text" 
+          name="author"
+          placeholder="Your name..."
+          class="card"
+          style="width: 100%; font-size: 1rem; font-family: 'Ellograph CF'"
+          />
+          <input
+            post
+            required
+            type="text"
+            name="body"
+            placeholder="Your comment..."
+            style="width: 100%; font-size: 1rem; font-family: 'Ellograph CF'"
+            class="card" 
+          />
+        <button style="width:min-content; font-size: 1rem; font-family: 'Ellograph CF';" post type="submit" name="sha" class="card" value={comment.Two}>Comment</button>
+      </form>
+    for _, com := range comment.One {
+      @Comment(*com)
     }
+  </section>
+}
+
+templ Comment(comment octogo.CommentResponse) {
+  <article post class="card">
+    {makeDate(comment.PublishedAt)}
+    {comment.Author}
+    @templ.Raw(comment.Content)
+  </article>
+}
+
+templ BlogPost(post *octogo.Post, home bool) {
+  <article hx-boost="true" class="card" 
+    if !home { 
+      post
+    } 
   >
     <h1 id={strings.ToLower(post.Slug)}>{post.Title}</h1>
     if home {

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -20,25 +19,26 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// e.GET("/css/*", echo.WrapHandler(fileServer))
 	// e.GET("/css/**/*", echo.WrapHandler(fileServer))
 
+	e.GET("/", echo.WrapHandler(templ.Handler(web.HomePage())))
 	e.GET("/blog", echo.WrapHandler(templ.Handler(web.BlogHomePage(s.Posts))))
 	e.GET("/blog/:slug", s.BlogPostHandler)
-	// e.POST("/hello", echo.WrapHandler(http.HandlerFunc(web.HelloWebHandler)))
-
-	e.GET("/", s.HelloWorldHandler)
+	e.POST("/blog/comment", s.CommitCommentHandler)
 
 	return e
 }
 
-func (s *Server) HelloWorldHandler(c echo.Context) error {
-	fmt.Println(s.Posts[0].Title)
-	resp := map[string]string{
-		"message": s.Octogo.GetPostBySlug(s.Posts[3].Slug).Title,
-	}
-
-	return c.JSON(http.StatusOK, resp)
-}
 func (s *Server) BlogPostHandler(c echo.Context) error {
-	return HTML(c, web.BlogPostPage(s.Octogo.GetPostBySlug(c.Param("slug"))))
+	slug := c.Param("slug")
+	post := s.Octogo.GetPostBySlug(slug)
+	comments := s.Octogo.GetCommentsBySlug(slug)
+	return HTML(c, web.BlogPostPage(post, comments))
+}
+func (s *Server) CommitCommentHandler(c echo.Context) error {
+	props := map[string]string{}
+	props["author"] = c.FormValue("author")
+	props["body"] = c.FormValue("body")
+	sha := c.FormValue("sha")
+	return HTML(c, web.Comment(*s.Octogo.CommitComment(props, sha)))
 }
 
 func HTML(c echo.Context, cmp templ.Component) error {

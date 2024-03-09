@@ -1,11 +1,11 @@
 package octogo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"sync"
 
 	"github.com/brtheo/goblog/internal/octogo/util"
@@ -17,6 +17,7 @@ type OctoReqConf struct {
 	id       string
 	endpoint string
 	verb     string
+	payload  []byte
 }
 
 type OctoRequest struct {
@@ -26,6 +27,11 @@ type OctoRequest struct {
 func Endpoint(endpoint string) ConfFunc[OctoReqConf] {
 	return func(conf *OctoReqConf) {
 		conf.endpoint = endpoint
+	}
+}
+func Payload(payload []byte) ConfFunc[OctoReqConf] {
+	return func(conf *OctoReqConf) {
+		conf.payload = payload
 	}
 }
 func Id(id string) ConfFunc[OctoReqConf] {
@@ -56,6 +62,7 @@ func parseResponseInto[T any](resp *http.Response) (parsedStruct T) {
 	body, err := io.ReadAll(resp.Body)
 	util.Throw(err)
 	json.Unmarshal(body, &parsedStruct)
+	// fmt.Printf("%+v\n", &parsedStruct)
 	return
 }
 
@@ -63,9 +70,16 @@ func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 	client := &http.Client{}
 	url := BASE_URL + fmt.Sprintf("%s/", o.conf.user) + fmt.Sprintf("%s/", o.conf.repo) + octoReq.conf.endpoint
 	// fmt.Println(url)
-	req, err := http.NewRequest(octoReq.conf.verb, url, nil)
+	req, err := func() (*http.Request, error) {
+		if octoReq.conf.verb == "PUT" {
+			return http.NewRequest(octoReq.conf.verb, url, bytes.NewBuffer(octoReq.conf.payload))
+		} else {
+			return http.NewRequest(octoReq.conf.verb, url, nil)
+		}
+	}()
 	util.Throw(err)
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
+	req.Header.Set("Authorization", fmt.Sprintf("token %s", "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"))
+	// req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITKEY")))
 	req.Header.Set("Accept", "application/vnd.github+json")
 	resp, err = client.Do(req)
 	util.Throw(err)

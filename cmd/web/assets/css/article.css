@@ -3,27 +3,36 @@ article.card {
   grid-template-columns: auto auto;
   font-family: "sofia-pro";
   & > section[data-lang] {
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     padding: var(--gap);
-    background-color: color-mix(in oklab, var(--bgClr) 95%, var(--accent)) !important;
+    background-color: var(--codeBg) !important;
     position: relative;
+    margin-top: var(--gap-xxl);
     &::before {
+      --size: .8rem;
       content: attr(data-lang);
       height: max-content;
       width: max-content;
       display: block;
-      translate: 0 -10px;
-      float: right;
-      opacity: .2;
-      font-size: .8rem;
+      font-size: var(--size);
+      padding: var(--size);
+      padding-bottom: 0;
+      position: absolute;
+      right: 0;
+      top: calc(var(--size) * -1);
+      background: var(--codeBg);
+      color: var(--accent);
+      border-radius: 1rem 1rem 0 0;
     }
     & > pre {
-      background-color: color-mix(in oklab, var(--bgClr) 95%, var(--accent)) !important;
+      background-color: var(--codeBg) !important;
       margin: 0;
+      width: 100%;
     }
   }
   &  img {
     width: 100%;
+    margin: var(--gap-xxl) 0;
   }
   & p {
       font-size: clamp(0.7rem, 0.4rem + 1.0667vw, 1rem);
@@ -40,6 +49,10 @@ article.card {
     font-family: "Ellograph CF";
     font-size: .8rem;
     margin: 0;
+    justify-self: end;
+  }
+  & > h1 {
+    margin-top: .5rem;
   }
   & > ul {
     list-style: none;
@@ -57,21 +70,32 @@ article.card {
       font-size: clamp(0.7rem, 0.4rem + 1.0667vw, 1rem);
     }
   }
-  & > a {
+  & > a,
+  & > button {
     width: auto;
     transform: translateY(40px);
     grid-column: 2;
     place-self: end;
     padding: var(--gap-sm) var(--gap);
+    background-color: var(--accent);
+    color: var(--black);
   }
 }
 
 article[post] {
   display: block;
+  & > h1 {
+    text-transform: capitalize;
+    text-align: center;
+    font-size: 3rem;
+  }
 }
 main:has(> [post]) {
   grid-template-columns: 10fr 2fr;
 }
 pre {
   overflow-x: auto;
+}
+table-content {
+  max-width: 350px;
 }

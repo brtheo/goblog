@@ -22,16 +22,19 @@ templ Layout() {
       <footer>
         
       </footer>
+      <script>
+        
+      </script>
 		</body>
 	</html>
 }
 
 templ Nav() {
   <input menu-button type="checkbox" />
-  <nav class="card center-y">
+  <nav class="card center-y" hx-boost="true">
     <a class="card" href="/">Home</a>
     <a class="card" href="/blog">Blog</a>
-    <a class="card" href="/about">About</a>
+    // <a class="card" href="/about">About</a>
     <scheme-switcher></scheme-switcher>
   </nav>
   <aside class="card center-y">

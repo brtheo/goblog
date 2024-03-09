@@ -3,6 +3,7 @@ package octogo
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	it "github.com/BooleanCat/go-functional/iter"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/brtheo/goblog/internal/octogo/util"
+	"github.com/google/uuid"
 	headingid "github.com/jkboxomine/goldmark-headingid"
 	"github.com/yuin/goldmark"
 	hl "github.com/yuin/goldmark-highlighting/v2"
@@ -23,11 +25,14 @@ import (
 )
 
 const (
-	BASE_URL    = "https://api.github.com/repos/"
-	TREE_URL    = "git/trees/"
-	COMMIT_URL  = "commits"
-	CONTENT_URL = "contents/"
-	BLOB        = "git/blobs/"
+	BASE_URL        = "https://api.github.com/repos/"
+	TREE_URL        = "git/trees/"
+	COMMIT_URL      = "commits"
+	CONTENT_URL     = "contents/"
+	BLOB            = "git/blobs/"
+	COMMENTS_TREE   = "git/trees/comments?recursive=true"
+	COMMENTS_COMMIT = "commits?sha=comments&path="
+	CONTENTS        = "contents/"
 )
 
 type Slug_Id it.Pair[string, string]
@@ -98,6 +103,19 @@ func (o *Octogo) newPost(commits_b64 Commits_B64, _slug string) *Post {
 		Tags:        matter.Tags,
 	}
 }
+func (o *Octogo) newComment(commits_b64 Commits_B64, _slug string) *CommentResponse {
+	var matter struct {
+		Author string `yaml:"author"`
+	}
+	last := len(commits_b64.One) - 1
+	html := extractHTMLWithMatter(commits_b64.Two, &matter)
+
+	return &CommentResponse{
+		PublishedAt: int(commits_b64.One[last].Commit.Author.Date.Unix()),
+		Content:     html,
+		Author:      matter.Author,
+	}
+}
 
 func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 	start := time.Now()
@@ -143,6 +161,85 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 	end := time.Since(start)
 	fmt.Println(end)
 	return p
+}
+
+type CommentRequest struct {
+	Message string `json:"message"`
+	Branch  string `json:"branch"`
+	Content string `json:"content"`
+}
+
+func (o *Octogo) CommitComment(props map[string]string, slug string) *CommentResponse {
+	author := props["author"]
+	body := props["body"]
+	comment := "---\n" + "author: " + author + "\n" + "---\n" + body
+	content := base64.StdEncoding.EncodeToString([]byte(comment))
+	req := &CommentRequest{
+		Message: "Message from " + author,
+		Branch:  "comments",
+		Content: content,
+	}
+	jjson, err := json.Marshal(req)
+	util.Throw(err)
+	uid := uuid.New()
+	fmt.Println(slug)
+	o.octoFetch(NewOctoReq(
+		Verb("PUT"),
+		Endpoint(CONTENTS+slug+"/"+uid.String()+".md"),
+		Payload(jjson),
+	))
+	return &CommentResponse{
+		Author:      author,
+		PublishedAt: int(time.Now().Unix()),
+		Content:     "<p>" + body + "</p>",
+	}
+}
+
+func (o *Octogo) GetCommentsBySlug(slug string) it.Pair[[]*CommentResponse, string] {
+	treeElements := it.Lift[TreeElement](parseResponseInto[TreeResponse](
+		o.octoFetch(
+			NewOctoReq(Endpoint(COMMENTS_TREE)),
+		),
+	).Tree).
+		Filter(func(treeElement TreeElement) bool {
+			return strings.Contains(treeElement.Path, slug)
+		})
+	comments := []*CommentResponse{}
+	elements := treeElements.Filter(func(treeElement TreeElement) bool {
+		return strings.ContainsAny(treeElement.Path, "/")
+	})
+	slug_id := it.Map[TreeElement, Slug_Id](elements, func(treeElement TreeElement) Slug_Id {
+		return Slug_Id{
+			One: treeElement.Path,
+			Two: treeElement.Sha,
+		}
+	})
+
+	comments = it.Map[Responses, *CommentResponse](
+		o.octoFetches(it.Fold[Slug_Id, map[string]OctoReqs](
+			slug_id,
+			map[string]OctoReqs{},
+			func(m map[string]OctoReqs, s Slug_Id) map[string]OctoReqs {
+				m[s.One] = OctoReqs{
+					One: NewOctoReq(Endpoint(COMMENTS_COMMIT + s.One)),
+					Two: NewOctoReq(Endpoint(BLOB + s.Two)),
+				}
+				return m
+			},
+		)),
+		func(r Responses) *CommentResponse {
+			return o.newComment(Commits_B64{
+				One: parseResponseInto[[]CommitResponse](r.One),
+				Two: parseResponseInto[BlobResponse](r.Two).Content,
+			}, r.id)
+		},
+	).Collect()
+	if len(comments) > 0 {
+		By[CommentResponse](func(a, b *CommentResponse) bool {
+			return a.PublishedAt > b.PublishedAt
+		}).Sort(comments)
+	}
+	return it.Pair[[]*CommentResponse, string]{One: comments, Two: slug}
 }
 
 func (o *Octogo) GetPostBySlug(slug string) *Post {
@@ -197,6 +294,11 @@ func extractHTMLWithMatter[T any](content string, matter *T) string {
 			&frontmatter.Extender{},
 			hl.NewHighlighting(
 				hl.WithStyle("xcode-dark"),
+				// hl.WithCustomStyle(chroma.MustNewStyle("mystyle", chroma.StyleEntries{
+				// 	chroma.Background: "var(--crBackground)",
+				// 	chroma.Keyword:    "var(-crKeyword)",
+				// })),
+				// hl.WithStyle("mystyle"),
 				hl.WithWrapperRenderer(wrapperRenderer),
 				hl.WithFormatOptions(
 					chromahtml.WithLineNumbers(true),

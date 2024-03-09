@@ -1,0 +1,56 @@
+package web
+
+
+templ HomePage() {
+	@Layout() {
+    <style>
+      .slf:hover {
+        & img {
+          top: -30px !important;
+        }
+      }
+      @container (width < 1080px) {
+        .badges {
+          flex-direction: column;
+          align-items: end;
+        }
+      }
+      main:has( .slf:hover ) .badges {
+        scale: 1 !important;
+        opacity: 1 !important;
+      }
+    </style>
+		<h1 style="font-size: 2.5rem; line-height: 4rem; margin-top: 7rem; color: var(--clr); grid-column: span 2;">
+      I'm Theo Brossier <br/>
+      Full Stack lead engineer <br/>
+      Currently working at Capgemini ♠️ <br/>
+      Living in Nantes, France
+    </h1>
+    <article tools class="card" style="width: 415px">
+      <h2 style="grid-column: span 2">Tools in my belt includes :</h2>
+      <ul style="gap: var(--gap)">
+        <li class="card">TypeScript</li>
+        <li class="card">WebComponent</li>
+        <li class="card">React</li>
+        <li class="card">HTMX</li>
+        <li class="card">GO</li>
+        <li class="card slf" style="background-color: #21A0DF;cursor: pointer; color: var(--black); position: relative; overflow: hidden;">
+          Salesforce
+          <img style="width: 32%;position: absolute; top: -9px; left: 0px;transition: top 200ms ease-in;" src="/static/img/astro.png" />
+        </li>
+      </ul>
+    </article>
+    @badges()
+	}
+}
+var names = [5]string{"administrator", "developer1", "developer2", "expcons", "javascript"}
+templ badges() {
+  <section class="badges" style="display: flex; scale:0; gap: var(--gap); opacity: 0; transition: opacity 200ms linear">
+    for _, badge := range names {
+      <article class="card" style="width: max-content; height: max-content;grid-template-columns: 1fr; place-content: center;">
+        <img style="width:125px; margin: 0;" src={"/static/img/badges/"+badge+".png"} />
+      </article>
+    }
+  </section>
+  
+}

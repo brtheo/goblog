@@ -22,9 +22,16 @@
   --accent: var(--dimmedLight);
   --contrast: black;
 
+  --codeBg: color-mix(in oklab, var(--black) 95%, var(--accent));
+
   --gap: 1rem;
   --gap-xl: 2rem;
   --gap-sm: .5rem;
+  --gap-xxl: 3rem;
+}
+*::selection {
+  background-color: var(--accent);
+  color: var(--black);
 }
 .dark {
   --bgClr: var(--black);
@@ -38,17 +45,19 @@
   --contrast: white;
 }
 *,*::before,*::after {box-sizing: border-box;}
-*::selection {background-color: var(--clr);}
 * { min-width: 0}
 .isolate {isolation: isolate;}
 .center-y {align-items: center}
 .w-full { width: 100% }
 a { text-decoration: none; color: var(--accent);}
-
 html {
-  background-color: var(--bgClr);
+  /* min-height: 100dvh; */
+  background-color: var(--bgClr);  
+  /* background-image: paint(worklet); */
   background-image: radial-gradient(var(--clr) 1px, transparent 0);
   background-size: 40px 40px;
+  background-repeat: space;
+  /* background-repeat: no-repeat; */
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
@@ -63,7 +72,7 @@ html {
     padding: 0;
     gap: var(--gap-xl);
     container: main-container / inline-size;
-    max-width: 1400px;
+    max-width: 1600px;
   }
 }
 @media screen and (max-width: 840px) {
@@ -150,7 +159,6 @@ main {
     grid-column: span 2;
   }
 }
-
 @keyframes floating {
   33% { translate: 0 10px; }
   66% { translate: 0 -8px; }
