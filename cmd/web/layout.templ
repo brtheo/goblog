@@ -7,16 +7,17 @@ templ Layout() {
 			<meta charset="utf-8"/>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<title>Go Blueprint Hello yes</title>
-			<script src="/static/js/htmx.min.js"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/htmx.org/dist/ext/preload.js"></script>
 			<script src="/static/js/app.js"></script>
 			<link rel="stylesheet" href="/static/css/style.css"></link>
       <link rel="stylesheet" href="https://use.typekit.net/ppc0skv.css"></link>
 		</head>
-		<body>
-      <header>
+		<body hx-ext="preload">
+      <header >
         @Nav()
       </header>
-			<main>
+			<main class="scale-transition">
 				{ children... }
 			</main>
       <footer>
@@ -32,12 +33,12 @@ templ Layout() {
 templ Nav() {
   <input menu-button type="checkbox" />
   <nav class="card center-y" hx-boost="true">
-    <a class="card" href="/">Home</a>
-    <a class="card" href="/blog">Blog</a>
+    <a class="card" href="/" hx-swap="outerHTML transition:true">Home</a>
+    <a class="card" href="/blog" hx-swap="outerHTML transition:true">Blog</a>
     // <a class="card" href="/about">About</a>
     <scheme-switcher></scheme-switcher>
   </nav>
-  <aside class="card center-y">
+  <aside class="card center-y" style="--del: 300ms">
     <img class="avatar" src="/static/img/me.jpg" alt="theo" />
     <span>Théo Brossier</span>
   </aside>

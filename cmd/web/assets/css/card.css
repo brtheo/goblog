@@ -43,7 +43,7 @@ a.card[data-active] { --clr: var(--accent); }
 a.card:active::before{ translate: -1px -1px; }
 
 :not(a, [post], table-content, [tools]).card {
-  animation: floating 8600ms ease-in infinite;
+  animation: floating 8600ms var(--del, 0ms) ease-in infinite;
   &:hover {
     outline: solid 3px var(--accent);
     outline-offset: 15px;

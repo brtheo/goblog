@@ -160,7 +160,7 @@ func CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) templ.Com
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<section style=\"display: flex; flex-direction: column;gap: var(--gap-xl)\"><form hx-post=\"/blog/comment\" method=\"POST\" hx-swap=\"afterend\" action=\"/blog/comment\" style=\"flex-direction: column\" post class=\"card\"><input post required type=\"text\" name=\"author\" placeholder=\"Your name...\" class=\"card\" style=\"width: 100%; font-size: 1rem; font-family: &#39;Ellograph CF&#39;\"> <input post required type=\"text\" name=\"body\" placeholder=\"Your comment...\" style=\"width: 100%; font-size: 1rem; font-family: &#39;Ellograph CF&#39;\" class=\"card\"> <button style=\"width:min-content; font-size: 1rem; font-family: &#39;Ellograph CF&#39;;\" post type=\"submit\" name=\"sha\" class=\"card\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<section class=\"scale-in\" style=\"display: flex; flex-direction: column;gap: var(--gap-xl)\"><form hx-post=\"/blog/comment\" method=\"POST\" hx-swap=\"afterend transition:true\" action=\"/blog/comment\" style=\"flex-direction: column\" post class=\"card\"><input post required type=\"text\" name=\"author\" placeholder=\"Your name...\" class=\"card\" style=\"width: 100%; font-size: 1rem; font-family: &#39;Ellograph CF&#39;\"> <input post required type=\"text\" name=\"body\" placeholder=\"Your comment...\" style=\"width: 100%; font-size: 1rem; font-family: &#39;Ellograph CF&#39;\" class=\"card\"> <button style=\"width:min-content; font-size: 1rem; font-family: &#39;Ellograph CF&#39;;\" post type=\"submit\" name=\"sha\" class=\"card\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -315,7 +315,7 @@ func BlogPost(post *octogo.Post, home bool) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-swap=\"innerHTML transition:true\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

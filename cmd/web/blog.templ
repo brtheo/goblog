@@ -36,8 +36,8 @@ templ Tag(tags []string) {
 }
 
 templ CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) {
-  <section style="display: flex; flex-direction: column;gap: var(--gap-xl)">
-    <form hx-post="/blog/comment" method="POST" hx-swap="afterend" action="/blog/comment" style="flex-direction: column"post class="card">
+  <section class="scale-in" style="display: flex; flex-direction: column;gap: var(--gap-xl)">
+    <form hx-post="/blog/comment" method="POST" hx-swap="afterend transition:true" action="/blog/comment" style="flex-direction: column"post class="card">
         <input
           post
           required
@@ -82,7 +82,7 @@ templ BlogPost(post *octogo.Post, home bool) {
     if home {
       <span>{makeDate(post.PublishedAt)}</span>
       <ul>@Tag(post.Tags)</ul>
-      <a class="card" href={makeURL(post.Slug)}>Read</a>
+      <a class="card" href={makeURL(post.Slug)} hx-swap="innerHTML transition:true">Read</a>
     } else {
       @templ.Raw(post.Content)
     }         
