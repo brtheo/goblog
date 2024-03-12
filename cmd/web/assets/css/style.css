@@ -149,12 +149,15 @@ main {
   main {
     width: 85%;
   }
+  table-content {
+    display: none !important;
+  }
+  .scale-in {
+    grid-column: span 2;
+  }
 }
 
 @container main-container (max-width: 1200px) {
-  table-content {
-    display: none;
-  }
   article[post] {
     grid-column: span 2;
   }
