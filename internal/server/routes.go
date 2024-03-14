@@ -15,6 +15,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.Use(middleware.Recover())
 	// fileServer := http.FileServer(http.FS(web.Files))
 	e.Static("/static", "cmd/web/assets")
+	e.File("/favicon.ico", "cmd/web/assets/favicon.ico")
 	// e.GET("/js/*", echo.WrapHandler(fileServer))
 	// e.GET("/css/*", echo.WrapHandler(fileServer))
 	// e.GET("/css/**/*", echo.WrapHandler(fileServer))
