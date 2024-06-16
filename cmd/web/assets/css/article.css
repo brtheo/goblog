@@ -89,6 +89,9 @@ article[post] {
     text-align: center;
     font-size: 3rem;
   }
+  & > ul {
+    flex-direction: column;
+  }
 }
 main:has(> [post]) {
   grid-template-columns: 10fr 2fr;
