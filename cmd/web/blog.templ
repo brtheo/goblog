@@ -5,6 +5,7 @@ import (
 	"time"
 	"strings"
   "github.com/BooleanCat/go-functional/iter"
+  "fmt"
 )
 
 func makeURL(url string) templ.SafeURL {
@@ -32,7 +33,7 @@ templ BlogPostPage(post *octogo.Post, comment iter.Pair[[]*octogo.CommentRespons
 templ Tag(tags []string) {
   for _, tag := range tags {
     <li ><a class="card">{tag}</a></li>
-  }   
+  }
 }
 
 templ CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) {
@@ -41,7 +42,7 @@ templ CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) {
         <input
           post
           required
-          type="text" 
+          type="text"
           name="author"
           placeholder="Your name..."
           class="card"
@@ -54,7 +55,7 @@ templ CommentForm(comment iter.Pair[[]*octogo.CommentResponse, string]) {
             name="body"
             placeholder="Your comment..."
             style="width: 100%; font-size: 1rem; font-family: 'Ellograph CF'"
-            class="card" 
+            class="card"
           />
         <button style="width:min-content; font-size: 1rem; font-family: 'Ellograph CF';" post type="submit" name="sha" class="card" value={comment.Two}>Comment</button>
       </form>
@@ -71,21 +72,27 @@ templ Comment(comment octogo.CommentResponse) {
     @templ.Raw(comment.Content)
   </article>
 }
+func viewName(prefix, name string) templ.SafeCSS {
+  name = strings.ReplaceAll(name, ".","_")
+  name = strings.ReplaceAll(name, ":","_")
+  return templ.SafeCSS(fmt.Sprintf("view-transition-name: %s-%s",prefix, name))
+}
+
 
 templ BlogPost(post *octogo.Post, home bool) {
-  <article hx-boost="true" class="card" 
-    if !home { 
+  <article hx-boost="true" class="card"
+    if !home {
       post
-    } 
+    }
   >
-    <h1 id={strings.ToLower(post.Slug)}>{post.Title}</h1>
+    <h1 id={strings.ToLower(post.Slug)} style={viewName("title", strings.ToLower(post.Slug))}>{post.Title}</h1>
     if home {
       <span>{makeDate(post.PublishedAt)}</span>
       <ul>@Tag(post.Tags)</ul>
       <a class="card" href={makeURL(post.Slug)} hx-swap="innerHTML transition:true">Read</a>
     } else {
       @templ.Raw(post.Content)
-    }         
+    }
   </article>
   if !home {
     <table-content class="card"></table-content>

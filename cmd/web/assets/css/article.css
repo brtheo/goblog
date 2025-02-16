@@ -1,6 +1,7 @@
 article.card {
   display: grid;
   grid-template-columns: auto auto;
+
   font-family: "sofia-pro";
   & > section[data-lang] {
     border-radius: 1rem;
@@ -40,7 +41,7 @@ article.card {
   & code span {
     font-size: 15px;
   }
-  & > h5 { 
+  & > h5 {
     margin-block: 0px;
     font-size: clamp(1rem, 0.2rem + 2.8444vw, 1.8rem);
     text-transform: capitalize;
@@ -52,6 +53,7 @@ article.card {
     justify-self: end;
   }
   & > h1 {
+    text-transform: capitalize;
     margin-top: .5rem;
   }
   & > ul {

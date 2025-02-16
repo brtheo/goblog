@@ -11,7 +11,7 @@
   --white: #cacaca;
   --electric: #D9D87D;
   --dimmedLight: #779d46;
-  
+
   font-family: 'Ellograph CF','Spline Sans Mono','Encode Sans Expanded';
   font-size: 1.25rem !important;
 
@@ -37,7 +37,7 @@
   --bgClr: var(--black);
   --clr: var(--white);
   --accent: var(--electric);
-  
+
   --black-300: color-mix(in lab, white 30%, var(--clr));
   --white-300: color-mix(in lab, white 60%, var(--clr));
   --bgClrLighter: var(--black-300);
@@ -52,7 +52,7 @@
 a { text-decoration: none; color: var(--accent);}
 html {
   /* min-height: 100dvh; */
-  background-color: var(--bgClr);  
+  background-color: var(--bgClr);
   /* background-image: paint(worklet); */
   background-image: radial-gradient(var(--clr) 1px, transparent 0);
   background-size: 40px 40px;
@@ -80,7 +80,7 @@ html {
     margin: 0 auto;
     padding: var(--gap-sm);
   }
-   body {  
+   body {
     padding: var(--gap);
   }
 }
@@ -94,7 +94,7 @@ main {
 }
 
 @container main-container (min-width: 840px) {
-  header { 
+  header {
     width: 100%;
     grid-column: 2 / span 10;
     grid-row: 1;
@@ -113,7 +113,7 @@ main {
     margin-bottom: 4rem;
     grid-column: span 12;
     gap: 1rem;
-    & > [menu-button] { 
+    & > [menu-button] {
       display: initial;
       top: 30px;
       left: 10px;
@@ -191,36 +191,40 @@ main {
   to { opacity: 0; }
 }
 
+@view-transition {
+  navigation: auto;
+}
 
-/* define animations for the old and new content */
+
+/* define animations for the old and new content
 ::view-transition-old(scale-it) {
-  animation: 
+  animation:
     180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
     600ms cubic-bezier(0.4, 0, 0.2, 1) both scaleY-out;
 }
 ::view-transition-new(scale-it) {
   transform-origin: top center;
-  animation: 
+  animation:
     420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
     600ms cubic-bezier(0.4, 0, 0.2, 1) both scaleY-in;
 }
 ::view-transition-old(scale-in) {
-  animation: 
+  animation:
     180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
     600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-out;
 }
 ::view-transition-new(scale-in) {
   transform-origin: top center;
-  animation: 
+  animation:
     420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
     600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-in;
 }
 
-/* tie the view transition to a given CSS class */
+tie the view transition to a given CSS class
 .scale-transition {
   view-transition-name: scale-it;
 }
 
 .scale-in {
   view-transition-name: scale-in;
-}
+} */
