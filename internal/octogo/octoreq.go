@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/brtheo/goblog/internal/octogo/util"
 
-	it "github.com/BooleanCat/go-functional/iter"
+	"github.com/BooleanCat/go-functional/v2/it"
 )
 
 type OctoReqConf struct {
@@ -87,7 +88,7 @@ func (o *Octogo) octoFetch(octoReq *OctoRequest) (resp *http.Response) {
 	return resp
 }
 
-func (o *Octogo) octoFetches(octoReq map[string]OctoReqs) *it.ChannelIter[Responses] {
+func (o *Octogo) octoFetches(octoReq map[string]OctoReqs) iter.Seq[Responses] {
 	ch := make(chan Responses)
 	var wg sync.WaitGroup
 	wg.Add(len(octoReq))

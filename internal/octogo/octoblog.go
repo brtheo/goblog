@@ -5,13 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"strings"
-	"time"
-
-	it "github.com/BooleanCat/go-functional/iter"
+	"github.com/BooleanCat/go-functional/v2/it"
+	"github.com/BooleanCat/go-functional/v2/it/itx"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/brtheo/goblog/internal/octogo/util"
 	"github.com/google/uuid"
@@ -22,6 +17,12 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 	gutil "github.com/yuin/goldmark/util"
 	"go.abhg.dev/goldmark/frontmatter"
+	"log"
+	"net/http"
+	"os"
+	"slices"
+	"strings"
+	"time"
 )
 
 const (
@@ -35,14 +36,19 @@ const (
 	CONTENTS        = "contents/"
 )
 
-type Slug_Id it.Pair[string, string]
-type OctoReqs it.Pair[*OctoRequest, *OctoRequest]
+type Pair[T any, K any] struct {
+	One T
+	Two K
+}
+
+type Slug_Id Pair[string, string]
+type OctoReqs Pair[*OctoRequest, *OctoRequest]
 type Responses struct {
 	One *http.Response
 	Two *http.Response
 	id  string
 }
-type Commits_B64 it.Pair[[]CommitResponse, string]
+type Commits_B64 Pair[[]CommitResponse, string]
 
 type ConfFunc[T any] func(conf *T)
 
@@ -120,7 +126,7 @@ func (o *Octogo) newComment(commits_b64 Commits_B64, _slug string) *CommentRespo
 func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 	start := time.Now()
 
-	treeElements := it.Lift[TreeElement](parseResponseInto[TreeResponse](
+	treeElements := itx.FromSlice[TreeElement](parseResponseInto[TreeResponse](
 		o.octoFetch(
 			NewOctoReq(Endpoint(TREE_URL + os.Getenv("GITBRANCH"))),
 		),
@@ -136,10 +142,9 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 		}
 	})
 
-	p := it.Map[Responses, *Post](
-		o.octoFetches(it.Fold[Slug_Id, map[string]OctoReqs](
+	p := slices.Collect(it.Map[Responses, *Post](
+		o.octoFetches(it.Fold(
 			slug_id,
-			map[string]OctoReqs{},
 			func(m map[string]OctoReqs, s Slug_Id) map[string]OctoReqs {
 				m[s.One] = OctoReqs{
 					One: NewOctoReq(Endpoint(COMMIT_URL + "?sha=" + os.Getenv("GITBRANCH") + "&path=" + s.One)),
@@ -147,6 +152,7 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 				}
 				return m
 			},
+			map[string]OctoReqs{},
 		)),
 		func(r Responses) *Post {
 			return o.newPost(Commits_B64{
@@ -154,7 +160,7 @@ func (o *Octogo) GetAllPosts(nPerPage uint) []*Post {
 				Two: parseResponseInto[BlobResponse](r.Two).Content,
 			}, r.id)
 		},
-	).Collect()
+	))
 	By[Post](func(a, b *Post) bool {
 		return a.PublishedAt > b.PublishedAt
 	}).Sort(p)
@@ -195,8 +201,8 @@ func (o *Octogo) CommitComment(props map[string]string, slug string) *CommentRes
 	}
 }
 
-func (o *Octogo) GetCommentsBySlug(slug string) it.Pair[[]*CommentResponse, string] {
-	treeElements := it.Lift[TreeElement](parseResponseInto[TreeResponse](
+func (o *Octogo) GetCommentsBySlug(slug string) Pair[[]*CommentResponse, string] {
+	treeElements := itx.FromSlice[TreeElement](parseResponseInto[TreeResponse](
 		o.octoFetch(
 			NewOctoReq(Endpoint(COMMENTS_TREE)),
 		),
@@ -215,10 +221,9 @@ func (o *Octogo) GetCommentsBySlug(slug string) it.Pair[[]*CommentResponse, stri
 		}
 	})
 
-	comments = it.Map[Responses, *CommentResponse](
+	comments = slices.Collect(it.Map[Responses, *CommentResponse](
 		o.octoFetches(it.Fold[Slug_Id, map[string]OctoReqs](
 			slug_id,
-			map[string]OctoReqs{},
 			func(m map[string]OctoReqs, s Slug_Id) map[string]OctoReqs {
 				m[s.One] = OctoReqs{
 					One: NewOctoReq(Endpoint(COMMENTS_COMMIT + s.One)),
@@ -226,6 +231,7 @@ func (o *Octogo) GetCommentsBySlug(slug string) it.Pair[[]*CommentResponse, stri
 				}
 				return m
 			},
+			map[string]OctoReqs{},
 		)),
 		func(r Responses) *CommentResponse {
 			return o.newComment(Commits_B64{
@@ -233,25 +239,25 @@ func (o *Octogo) GetCommentsBySlug(slug string) it.Pair[[]*CommentResponse, stri
 				Two: parseResponseInto[BlobResponse](r.Two).Content,
 			}, r.id)
 		},
-	).Collect()
+	))
 	if len(comments) > 0 {
 		By[CommentResponse](func(a, b *CommentResponse) bool {
 			return a.PublishedAt > b.PublishedAt
 		}).Sort(comments)
 	}
-	return it.Pair[[]*CommentResponse, string]{One: comments, Two: slug}
+	return Pair[[]*CommentResponse, string]{One: comments, Two: slug}
 }
 
 func (o *Octogo) GetPostBySlug(slug string) *Post {
 	_slug := slug + ".md"
-	octoReqs := o.octoFetches(
+	octoReqs := slices.Collect(o.octoFetches(
 		map[string]OctoReqs{
 			"_": {
 				One: NewOctoReq(Endpoint(COMMIT_URL + "?sha=" + os.Getenv("GITBRANCH") + "&path=" + _slug)),
 				Two: NewOctoReq(Endpoint(CONTENT_URL + _slug + "?ref=" + os.Getenv("GITBRANCH"))),
 			},
 		},
-	).Collect()
+	))
 	return o.newPost(Commits_B64{
 		One: parseResponseInto[[]CommitResponse](octoReqs[0].One),
 		Two: parseResponseInto[ContentResponse](octoReqs[0].Two).Content,
