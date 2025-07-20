@@ -1,6 +1,6 @@
 module github.com/brtheo/goblog
 
-go 1.23
+go 1.24
 
 require (
 	// github.com/BooleanCat/go-functional v1.1.0
